@@ -3,7 +3,9 @@ from fastapi import Depends, Query
 from pydantic import BaseModel
 from fastapi import Request, HTTPException
 
+from database import async_session_maker
 from service.auth import AuthServise
+from utils.db_manager import DBMamager
 
 
 # Данный документ нужен для создания схем, параметр которого лягут в URL запроса
@@ -18,6 +20,7 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 
 
 def get_token(request: Request) -> str:
+
     token = request.cookies.get("access_token", None)
     if not token:
         raise HTTPException(status_code=401, detail= 'Вы не аутентифицированы')
@@ -30,4 +33,11 @@ def get_current_user_id(token: str = Depends(get_token)) ->int:
 
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
+
+
+async def get_db():
+    async with DBMamager(session_factory=async_session_maker) as db:
+        yield db
+
+DBDep = Annotated[DBMamager, Depends(get_db)]
 

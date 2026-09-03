@@ -1,10 +1,10 @@
-from email.policy import EmailPolicy
+from sqlalchemy import  select
+from pydantic import EmailStr
 
 from src.models.users import UsersOrm
 from src.repositories.base import BaseRepositories
 from src.schemas.auth import User, UserWithHashedPassword
-from sqlalchemy import  select
-from pydantic import EmailStr
+
 
 
 class UsersRepositories(BaseRepositories):
