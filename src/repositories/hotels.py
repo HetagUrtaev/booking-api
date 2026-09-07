@@ -1,6 +1,6 @@
 from datetime import date
 
-from repositories.mappers.mappers import HotelDataMapper
+from src.repositories.mappers.mappers import HotelDataMapper
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import rooms_ids_for_booking
 from src.models.hotels import HotelsOrm

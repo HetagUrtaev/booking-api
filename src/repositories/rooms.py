@@ -2,15 +2,15 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
 
+from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsMapper
 from src.models.rooms import RoomsOrm
 from src.repositories.utils import rooms_ids_for_booking
 from src.repositories.base import BaseRepositories
-from src.schemas.rooms import Room, RoomWithRels
 
 
 class RoomsRepositories(BaseRepositories):
     model = RoomsOrm
-    schema = Room
+    mapper = RoomDataMapper
 
     async def get_filtered_by_time(
             self,
@@ -29,8 +29,7 @@ class RoomsRepositories(BaseRepositories):
             .filter(RoomsOrm.id.in_(room_ids_to_get))
         )
         result = await self.session.execute(query)
-        # Получаем данные из БД и сразу превращаем каждую строчку в красивый Pydantic-объект
-        return [RoomWithRels.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
+        return [RoomWithRelsMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
 
 
     async def get_one_or_none(self, **filter_by):
@@ -40,9 +39,8 @@ class RoomsRepositories(BaseRepositories):
             .filter_by(**filter_by)
         )
         result = await self.session.execute(query)
-        res = result.scalars().one_or_none()
-        if res is None:
-            return None # Если в базе ничего не нашлось, возвращаем None
-        # Если нашли — превращаем в Pydantic-объект и отдаем наружу
-        return RoomWithRels.model_validate(res, from_attributes=True)
+        model = result.scalars().one_or_none()
+        if model is None:
+            return None
+        return RoomWithRelsMapper.map_to_domain_entity(model)
 

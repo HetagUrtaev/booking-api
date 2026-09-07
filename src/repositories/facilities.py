@@ -1,16 +1,17 @@
+from src.repositories.mappers.mappers import FacilityDataMapper, RoomFacilityDataMapper
 from src.models.facilities import FacilitiesOrm, RoomsFacilitiesOrm
 from src.repositories.base import BaseRepositories
-from src.schemas.facilities import Facility, RoomFacility
+
 from sqlalchemy import insert, select, delete, update
 
 
 class FacilitiesRepositories(BaseRepositories):
     model = FacilitiesOrm
-    schema = Facility
+    mapper = FacilityDataMapper
 
 class RoomsFacilitiesRepositories(BaseRepositories):
     model = RoomsFacilitiesOrm
-    schema = RoomFacility
+    mapper = RoomFacilityDataMapper
 
     async def set_rooms_facilities(self, room_id: int, facilities_ids: list[int]):
         get_corrent_facilities_ids_query= select(self.model.facility_id).filter_by(room_id=room_id)
@@ -37,16 +38,3 @@ class RoomsFacilitiesRepositories(BaseRepositories):
                 )
             )
             await self.session.execute(insert_m2m_facilities_stmt)
-
-
-
-
-
-
-
-
-
-
-
-
-
