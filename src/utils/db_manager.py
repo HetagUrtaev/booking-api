@@ -1,8 +1,8 @@
-from repositories.auth import UsersRepositories
-from repositories.hotels import HotelsRepositories
-from repositories.rooms import RoomsRepositories
-from repositories.bookings import BookingsRepositories
-from repositories.facilities import FacilitiesRepositories, RoomsFacilitiesRepositories
+from src.repositories.auth import UsersRepositories
+from src.repositories.hotels import HotelsRepositories
+from src.repositories.rooms import RoomsRepositories
+from src.repositories.bookings import BookingsRepositories
+from src.repositories.facilities import FacilitiesRepositories, RoomsFacilitiesRepositories
 
 class DBMamager:
 
