@@ -7,10 +7,15 @@ from sqlalchemy.orm import DeclarativeBase
 from src.config import settings
 
 
+db_params = {}
+if settings.MODE == 'TEST':
+    db_params = {"poolclass": NullPool}
+
+
 # Движок с постоянным пулом соединений
-engine = create_async_engine(settings.DB_URL)
+engine = create_async_engine(settings.DB_URL, **db_params)
 # Движок без пула соединений
-# (для редких фоновых задач Celery, чтобы не забивать память БД)
+# (для редких фоновых задач Celery и для тестов, чтобы не забивать память БД)
 engine_null_pool = create_async_engine(settings.DB_URL, poolclass=NullPool)
 
 # Фабрика сессий

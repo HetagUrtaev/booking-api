@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi import Request, HTTPException
 
 from database import async_session_maker
-from service.auth import AuthServise
+from service.auth import AuthService
 from utils.db_manager import DBMamager
 
 
@@ -28,7 +28,7 @@ def get_token(request: Request) -> str:
 
 def get_current_user_id(token: str = Depends(get_token)) ->int:
 
-    data = AuthServise().decode_token(token)
+    data = AuthService().decode_token(token)
     return data['user_id']
 
 

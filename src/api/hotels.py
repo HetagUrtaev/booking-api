@@ -12,8 +12,8 @@ async def get_hotels(
         db: DBDep,
         location: str | None = Query(default=None, description='Локация'),
         title: str | None = Query(default=None, description='Название отеля'),
-        date_from: date = Query(example= '2026-08-01'),
-        date_to: date = Query(example= '2026-08-07')
+        date_from: date = Query(json_schema_extra={"example": "2026-08-01"}),
+        date_to: date = Query(json_schema_extra={"example": "2026-08-07"})
 ):
     per_page = pagination.per_page or 5
 

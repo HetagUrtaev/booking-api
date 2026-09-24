@@ -48,6 +48,7 @@ class BaseRepositories:
 
     async def add_bulk(self, data: list[BaseModel]):
         # Данный метод добавлен для добавления объекта со связью многие-ко-многим
+        # Также он подходит для добавления неопределенного количества данных (используем в тестах)
         add_data_stmt = insert(self.model).values([item.model_dump() for  item  in data])
         await self.session.execute(add_data_stmt)
 

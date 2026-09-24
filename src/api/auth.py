@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response
 from api.dependencies import UserIdDep, DBDep
 
 from src.schemas.auth import UserRequestAdd, UserAdd
-from src.service.auth import AuthServise
+from src.service.auth import AuthService
 
 
 router = APIRouter(prefix='/auth', tags=['Авторизация и аутентификация'])
@@ -16,16 +16,19 @@ async def login_user(
     user = await db.users.get_user_with_hashed_password(email=data.email)
     if not user:
         raise HTTPException(status_code=401, detail='Пользователь с таким email не зарегистрирован')
-    if not AuthServise().verify_password(data.password, user.password):
+    if not AuthService().verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail='Пароль неверный')
-    access_token = AuthServise().create_access_token({'user_id': user.id})
+    access_token = AuthService().create_access_token({'user_id': user.id})
     response.set_cookie('access_token', access_token)
     return {'access_token': access_token}
 
 
 @router.post('/register', summary = 'Регистрация')
 async def register_user(data: UserRequestAdd, db: DBDep):
-    hash_password = AuthServise().hash_password(data.password)
+    user = await db.users.get_user_with_hashed_password(email=data.email)
+    if user is not None:
+        raise HTTPException(status_code=400, detail='Пользователь с таким email уже зарегистрирован')
+    hash_password = AuthService().hash_password(data.password)
     now_user_data = UserAdd(email=data.email,  password=hash_password)
     await db.users.add(now_user_data)
     await db.commit()

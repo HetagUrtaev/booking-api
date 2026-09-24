@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from src.config import settings
 
 
-class AuthServise:
+class AuthService:
 
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -23,7 +23,13 @@ class AuthServise:
     def verify_password(self, plain_password, hashed_password):  # проверка пароля
         return self.pwd_context.verify(plain_password, hashed_password)
 
+
+
     def decode_token(self, token: str) -> dict:
+        """
+        Принимает JWT-токен, декодирует его и возвращает словарь с ID пользователя
+        и временем окончания действия токена (exp).
+        """
         try:
             return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         except jwt.exceptions.DecodeError: # тут обработаны не все возможные ошибки токена
