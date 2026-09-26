@@ -1,100 +1,82 @@
-from fastapi import APIRouter, Body, Query
 from datetime import date
+
+from fastapi import APIRouter, Body, Query
 from fastapi_cache.decorator import cache
 
 from api.dependencies import DBDep
-from schemas.rooms import RoomAdd, RoomAddReqest, RoomPatch, RoomPatchReqest
 from schemas.facilities import RoomFacilityAdd
+from schemas.rooms import RoomAdd, RoomAddReqest, RoomPatch, RoomPatchReqest
+
+router = APIRouter(prefix="/hotels/{hotel_id}/rooms", tags=["Номера"])
 
 
-router = APIRouter(prefix='/hotels/{hotel_id}/rooms', tags=['Номера'])
-
-
-@router.get('', summary = 'Вывести все номера')
+@router.get("", summary="Вывести все номера")
 @cache(expire=25)
 async def get_rooms(
-        hotel_id: int,
-        db: DBDep,
-        date_from: date = Query(json_schema_extra = {"extra":'2026-08-01'}),
-        date_to: date = Query(json_schema_extra = {"extra":'2026-08-07'})
+    hotel_id: int,
+    db: DBDep,
+    date_from: date = Query(json_schema_extra={"extra": "2026-08-01"}),  # noqa: B008
+    date_to: date = Query(json_schema_extra={"extra": "2026-08-07"}),  # noqa: B008
 ):
     return await db.rooms.get_filtered_by_time(
-        hotel_id=hotel_id,
-        date_from= date_from,
-        date_to=date_to
+        hotel_id=hotel_id, date_from=date_from, date_to=date_to
     )
 
-@router.get('/{room_id}', summary = 'Вывести один номер')
+
+@router.get("/{room_id}", summary="Вывести один номер")
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
     print(type(await db.rooms.get_one_or_none(id=room_id)))
     return await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id)
 
 
-@router.post('', summary = 'Добавить номер')
+@router.post("", summary="Добавить номер")
 async def create_room(
-        hotel_id: int,
-        db: DBDep,
-        rooms_data: RoomAddReqest = Body(),
+    hotel_id: int,
+    db: DBDep,
+    rooms_data: RoomAddReqest = Body(),  # noqa: B008
 ):
 
     _room_data = RoomAdd(hotel_id=hotel_id, **rooms_data.model_dump())
     room = await db.rooms.add(_room_data)
 
     rooms_facilities_data = [
-        RoomFacilityAdd(room_id=room.id,
-                        facility_id=f_id) for f_id in rooms_data.facilities_ids
+        RoomFacilityAdd(room_id=room.id, facility_id=f_id)
+        for f_id in rooms_data.facilities_ids
     ]
     await db.rooms_facilities.add_bulk(rooms_facilities_data)
     await db.commit()
-    return {'status': 'OK', 'data': room}
+    return {"status": "OK", "data": room}
 
 
-@router.put('/{room_id}', summary = 'Полное обновление номера')
-async def put_room(
-    hotel_id: int,
-    room_id: int,
-    rooms_data: RoomAddReqest,
-    db: DBDep
-):
+@router.put("/{room_id}", summary="Полное обновление номера")
+async def put_room(hotel_id: int, room_id: int, rooms_data: RoomAddReqest, db: DBDep):
     _room_data = RoomAdd(hotel_id=hotel_id, **rooms_data.model_dump())
     await db.rooms.edit(_room_data, id=room_id)
-    await db.rooms_facilities.set_rooms_facilities(room_id, facilities_ids=rooms_data.facilities_ids)
+    await db.rooms_facilities.set_rooms_facilities(
+        room_id, facilities_ids=rooms_data.facilities_ids
+    )
     await db.commit()
-    return {'status': 'OK'}
+    return {"status": "OK"}
 
 
-@router.patch('/{room_id}', summary = 'Частичное обновление номера')
+@router.patch("/{room_id}", summary="Частичное обновление номера")
 async def patch_room(
-    hotel_id: int,
-    room_id: int,
-    rooms_data: RoomPatchReqest,
-    db: DBDep
+    hotel_id: int, room_id: int, rooms_data: RoomPatchReqest, db: DBDep
 ):
     _rooms_data_dict = rooms_data.model_dump(exclude_unset=True)
     _room_data = RoomPatch(hotel_id=hotel_id, **_rooms_data_dict)
-    await db.rooms.edit(
-        _room_data,
-        exclude_unset=True,
-        id=room_id,
-        hotel_id=hotel_id
-    )
+    await db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
 
-    if 'facilities_ids' in _rooms_data_dict:
+    if "facilities_ids" in _rooms_data_dict:
         await db.rooms_facilities.set_rooms_facilities(
-            room_id,
-            facilities_ids=_rooms_data_dict['facilities_ids']
+            room_id, facilities_ids=_rooms_data_dict["facilities_ids"]
         )
     await db.commit()
-    return {'status': 'OK'}
+    return {"status": "OK"}
 
 
-@router.delete('/{room_id}', summary = 'Удаление номера')
+@router.delete("/{room_id}", summary="Удаление номера")
 async def delete_room(hotel_id: int, room_id: int, db: DBDep):
     await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     await db.commit()
-    return  {'status': 'OK'}
-
-
-
-
-
+    return {"status": "OK"}

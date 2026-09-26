@@ -10,6 +10,7 @@ class RoomAddReqest(BaseModel):
     quantity: int
     facilities_ids: list[int] = []
 
+
 class RoomAdd(BaseModel):
     hotel_id: int
     title: str
@@ -17,10 +18,12 @@ class RoomAdd(BaseModel):
     price: int
     quantity: int
 
+
 class Room(RoomAdd):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class RoomWithRels(Room):
     facilities: list[Facility]

@@ -1,7 +1,8 @@
-from time import sleep
-import os
-from PIL import Image
 import asyncio
+import os
+from time import sleep
+
+from PIL import Image
 
 from src.database import async_session_maker_null_pool
 from src.tasks.celery_app import celery_instance
@@ -10,9 +11,10 @@ from src.utils.db_manager import DBMamager
 
 @celery_instance.task
 def task_task():
-    print('Я начал')
+    print("Я начал")
     sleep(5)
-    print('Я закончил')
+    print("Я закончил")
+
 
 @celery_instance.task
 def resize_and_save_image(file_path: str):
@@ -54,28 +56,30 @@ def resize_and_save_image(file_path: str):
 
             # Сохраняем
             resized_img.save(new_file_path, optimize=True, quality=85)
-            print(f"✅ Создана копия: {new_file_path} (Размер: {current_width}x{height})")
+            print(
+                f"✅ Создана копия: {new_file_path} (Размер: {current_width}x{height})"
+            )
 
     # Удаляем временный исходник, так как у нас теперь есть все 3 нужных файла!
     os.remove(file_path)
     print(f"🗑️ Исходный файл {base_name} удален.")
+
 
 async def get_bookings_with_today_checkin_helper():
     """
     Асинхронный помощник. Celery работает отдельно от FastAPI, поэтому эта функция
     руками открывает сессию к Postgres, забирает сегодняшние бронирования и печатает их.
     """
-    print('Я запускаюсь')
+    print("Я запускаюсь")
     async with DBMamager(session_factory=async_session_maker_null_pool) as db:
         bookings = await db.bookings.get_bookings_with_today_checkin()
-        print(f'{bookings}')
+        print(f"{bookings}")
 
 
-@celery_instance.task(name='booking_today_checkin')
+@celery_instance.task(name="booking_today_checkin")
 def sent_emails_to_users_with_today_checkin():
     """
     Синхронная задача Celery. Воркер не умеет напрямую делать await.
     Поэтому мы используем asyncio.run(), чтобы запустить асинправного помощника выше.
     """
     asyncio.run(get_bookings_with_today_checkin_helper())
-

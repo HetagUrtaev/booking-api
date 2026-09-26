@@ -5,7 +5,7 @@ def test_create_access_token():
     """Проверяет успешную генерацию JWT-токена доступа и
     валидирует строковый тип возвращаемых данных."""
 
-    data = {'user_id': 1}
+    data = {"user_id": 1}
     jwt_token = AuthService().create_access_token(data)
 
     assert jwt_token

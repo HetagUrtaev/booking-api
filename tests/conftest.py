@@ -6,31 +6,33 @@
 тестирования эндпоинтов FastAPI.
 """
 
-import pytest
 import json
-from httpx import AsyncClient, ASGITransport
-
 from unittest import mock
-mock.patch('fastapi_cache.decorator.cache', lambda *args, **kwargs: lambda f: f).start() # мокаем работу с кэшом
-mock.patch('src.api.facilities.task_task.delay', lambda *args, **kwargs: None).start() # мокаем подключение в redis
 
-from src.schemas.rooms import RoomAdd
-from src.database import async_session_maker_null_pool
-from src.schemas.hotels import HotelAdd
-from src.utils.db_manager import DBMamager
-from src.main import app
+import pytest
+from httpx import ASGITransport, AsyncClient
+
+mock.patch(
+    "fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f
+).start()  # мокаем работу с кэшом
+mock.patch(
+    "src.api.facilities.task_task.delay", lambda *args, **kwargs: None
+).start()  # мокаем подключение в redis
+
 from src.config import settings
-from src.database import Base, engine
+from src.database import Base, async_session_maker_null_pool, engine
+from src.main import app
 from src.models import *
-
+from src.schemas.hotels import HotelAdd
+from src.schemas.rooms import RoomAdd
+from src.utils.db_manager import DBMamager
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def check_test_mode():
     """Предохранитель, который проверяет, что тесты
     запущены строго в изолированном тестовом режиме."""
-    assert settings.MODE == 'TEST'
-
+    assert settings.MODE == "TEST"
 
 
 @pytest.fixture(scope="function")
@@ -52,9 +54,9 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.create_all)
     # Заполняем БД тестовыми данными:
     # 1. Читаем файлы, преобразуя JSON-данные в Python-объекты
-    with open('tests/mock_hotels.json', 'r', encoding='utf8') as file_hotels:
+    with open("tests/mock_hotels.json", "r", encoding="utf8") as file_hotels:  # noqa: ASYNC230
         hotels = json.load(file_hotels)
-    with open('tests/mock_rooms.json', 'r', encoding='utf8') as rooms_hotels:
+    with open("tests/mock_rooms.json", "r", encoding="utf8") as rooms_hotels:  # noqa: ASYNC230
         rooms = json.load(rooms_hotels)
 
     # 2. Преобразовываем сырые данные в Pydantic-схемы для валидации
@@ -70,12 +72,13 @@ async def setup_database(check_test_mode):
         await db_.commit()
 
 
-
 @pytest.fixture(scope="session")
 async def ac():
     """Создает виртуальный HTTP-клиент для отправки запросов
     в эндпоинты приложения без запуска реального сервера."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
 
 
@@ -83,13 +86,8 @@ async def ac():
 async def register_user(ac, setup_database):
     """Автоматически регистрирует тестового юзера через HTTPX-клиент
     сразу после того, как setup_database создаст таблицы."""
-    await ac.post(
-        '/auth/register',
-        json= {
-            'email': 'test@user.com',
-            'password': '123'
-        }
-    )
+    await ac.post("/auth/register", json={"email": "test@user.com", "password": "123"})
+
 
 @pytest.fixture(scope="session")
 async def authenticated_as(register_user, ac):
@@ -97,13 +95,6 @@ async def authenticated_as(register_user, ac):
     Выполняет аутентификацию тестового пользователя и возвращает
     клиент HTTPX с сохраненными в куках JWT-токенами.
     """
-    await ac.post(
-        url='/auth/login',
-        json={
-            'email': 'test@user.com',
-            'password': '123'
-        }
-    )
-    assert ac.cookies['access_token']
+    await ac.post(url="/auth/login", json={"email": "test@user.com", "password": "123"})
+    assert ac.cookies["access_token"]
     yield ac
-

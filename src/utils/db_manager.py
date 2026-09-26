@@ -1,16 +1,18 @@
 from src.repositories.auth import UsersRepositories
+from src.repositories.bookings import BookingsRepositories
+from src.repositories.facilities import (
+    FacilitiesRepositories,
+    RoomsFacilitiesRepositories,
+)
 from src.repositories.hotels import HotelsRepositories
 from src.repositories.rooms import RoomsRepositories
-from src.repositories.bookings import BookingsRepositories
-from src.repositories.facilities import FacilitiesRepositories, RoomsFacilitiesRepositories
+
 
 class DBMamager:
-
     def __init__(self, session_factory):
         self.session_factory = session_factory
 
-
-    async def  __aenter__(self):
+    async def __aenter__(self):
         self.session = self.session_factory()
         self.bookings = BookingsRepositories(self.session)
         self.hotels = HotelsRepositories(self.session)
@@ -18,7 +20,6 @@ class DBMamager:
         self.facilities = FacilitiesRepositories(self.session)
         self.rooms_facilities = RoomsFacilitiesRepositories(self.session)
         self.users = UsersRepositories(self.session)
-
 
         return self
 

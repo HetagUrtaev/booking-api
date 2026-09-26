@@ -33,6 +33,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
 
+
 def downgrade() -> None:
     op.drop_table("rooms_facilities")
     op.drop_table("facilities")

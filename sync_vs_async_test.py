@@ -1,24 +1,25 @@
-import asyncio
+"""import asyncio
 import aiohttp
 
+
 async def get_date(i: int, pat: str):
-    url = f'http://127.0.0.1:8000/{pat}/{i}'
-    print(f'Начал выполнение {i}')
+    url = f"http://127.0.0.1:8000/{pat}/{i}"
+    print(f"Начал выполнение {i}")
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
-            print(f'Закончил выполнение {i}')
+            print(f"Закончил выполнение {i}")
+
 
 async def main():
 
-    await asyncio.gather(
-        *[get_date(i+1, 'sync') for i in range(300)]
-    )
+    await asyncio.gather(*[get_date(i + 1, "sync") for i in range(300)])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())
+"""
 
-
-#Проверка синхронности - в основной код
+# Проверка синхронности - в основной код
 # import time
 # import asyncio
 # @app.get('/sync/{id}')
@@ -35,4 +36,3 @@ if __name__ == '__main__':
 #     print(f'async. Начал {id}: {time.time():.2f}')
 #     await asyncio.sleep(3)
 #     print(f'async. Закончил {id}: {(time.time() - с):.2f}')
-

@@ -4,10 +4,11 @@ from pydantic import BaseModel, ConfigDict
 class FacilityAddReqest(BaseModel):
     title: str
 
+
 class Facility(FacilityAddReqest):
     id: int
 
-    model_config = ConfigDict(from_attributes=True) # ????
+    model_config = ConfigDict(from_attributes=True)  # ????
 
 
 class RoomFacilityAdd(BaseModel):
@@ -17,4 +18,3 @@ class RoomFacilityAdd(BaseModel):
 
 class RoomFacility(RoomFacilityAdd):
     id: int
-

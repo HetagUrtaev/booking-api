@@ -6,9 +6,8 @@ from sqlalchemy.orm import DeclarativeBase
 
 from src.config import settings
 
-
 db_params = {}
-if settings.MODE == 'TEST':
+if settings.MODE == "TEST":
     db_params = {"poolclass": NullPool}
 
 
@@ -22,7 +21,10 @@ engine_null_pool = create_async_engine(settings.DB_URL, poolclass=NullPool)
 async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
 # Фабрика сессий без пула
 # (используется в Celery для разовых тяжелых фоновых запросов)
-async_session_maker_null_pool = async_sessionmaker(bind=engine_null_pool, expire_on_commit=False)
+async_session_maker_null_pool = async_sessionmaker(
+    bind=engine_null_pool, expire_on_commit=False
+)
+
 
 # Базовый класс-фундамент, от которого наследуются все ORM-таблицы в коде
 class Base(DeclarativeBase):

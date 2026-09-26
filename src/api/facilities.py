@@ -5,22 +5,22 @@ from api.dependencies import DBDep
 from schemas.facilities import FacilityAddReqest
 from src.tasks.tasks import task_task
 
-router = APIRouter(prefix='/facilities', tags=['Удобства'])
+router = APIRouter(prefix="/facilities", tags=["Удобства"])
 
 
-@router.get('', summary='Получение всех видов удобств')
+@router.get("", summary="Получение всех видов удобств")
 @cache(expire=10)
 async def get_facilities(db: DBDep):
     return await db.facilities.get_all()
 
 
-@router.post('', summary = 'Добавление нового вида удобства')
+@router.post("", summary="Добавление нового вида удобства")
 async def add_facilities(
-        db: DBDep,
-        facilities_data: FacilityAddReqest = Body(),
-    ):
+    db: DBDep,
+    facilities_data: FacilityAddReqest = Body(),  # noqa: B008
+):
     facility = await db.facilities.add(facilities_data)
     await db.commit()
 
     task_task.delay()
-    return {'status': 'OK', 'data': facility}
+    return {"status": "OK", "data": facility}
