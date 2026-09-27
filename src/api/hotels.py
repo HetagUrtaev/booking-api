@@ -3,6 +3,11 @@ from datetime import date
 from fastapi import APIRouter, Body, Query
 
 from src.api.dependencies import DBDep, PaginationDep
+from src.exceptions import (
+    HotelNotFoundHTTPException,
+    ObjectNotFoundException,
+    check_date_to_after_date_from,
+)
 from src.schemas.hotels import HotelAdd, HotelPATCH
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -17,8 +22,10 @@ async def get_hotels(
     date_from: date = Query(json_schema_extra={"example": "2026-08-01"}),  # noqa: B008
     date_to: date = Query(json_schema_extra={"example": "2026-08-07"}),  # noqa: B008
 ):
-    per_page = pagination.per_page or 5
 
+    check_date_to_after_date_from(date_to, date_from)
+
+    per_page = pagination.per_page or 5
     return await db.hotels.get_filtered_by_time(
         location=location,
         title=title,
@@ -31,8 +38,10 @@ async def get_hotels(
 
 @router.get("/{hotel_id}", summary="Вывести один отель")
 async def get_hotel(hotel_id: int, db: DBDep):
-    return await db.hotels.get_one_or_none(id=hotel_id)
-
+    try:
+        return await db.hotels.get_one(id=hotel_id)
+    except ObjectNotFoundException:
+        raise HotelNotFoundHTTPException
 
 @router.post("", summary="Добавить отель")
 async def post_hotel(

@@ -15,8 +15,8 @@ class RoomsRepositories(BaseRepositories):
 
     async def get_filtered_by_time(self, hotel_id, date_from: date, date_to: date):
 
+
         room_ids_to_get = rooms_ids_for_booking(date_from, date_to, hotel_id)
-        # print(room_ids_to_get.compile(bind=engine, compile_kwargs={'literal_binds': True}))
 
         query = (
             select(self.model)

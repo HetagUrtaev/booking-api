@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from fastapi import HTTPException
 from sqlalchemy import select
 
+from src.exceptions import AllRoomsBookedException
 from src.models.bookings import BookingsOrm
 from src.repositories.base import BaseRepositories
 from src.repositories.mappers.mappers import BookingDataMapper
@@ -27,10 +27,9 @@ class BookingsRepositories(BaseRepositories):
             self.mapper.map_to_domain_entity(model) for model in result.scalars().all()
         ]
 
-    """Проверяет доступность и создаёт бронь."""
 
     async def add_booking(self, data: BookingAdd, hotel_id: int):
-
+        """Проверяет доступность и создаёт бронь."""
         booking_ids_to_get = rooms_ids_for_booking(
             date_from=data.date_from, date_to=data.date_to, hotel_id=hotel_id
         )
@@ -40,5 +39,4 @@ class BookingsRepositories(BaseRepositories):
         if data.room_id in booking_ids_to_book:
             new_booking = await self.add(data)
             return new_booking
-        else:
-            raise HTTPException(status_code=400, detail="На данные даты мест нет")
+        raise AllRoomsBookedException

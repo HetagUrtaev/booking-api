@@ -1,14 +1,18 @@
 from contextlib import asynccontextmanager
+import sys
+import logging
+from pathlib import Path
 
 from fastapi import FastAPI
-import uvicorn
-import sys
-from pathlib import Path
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from init import redis_manager
+import uvicorn
+
 
 sys.path.append(str(Path(__file__).parent.parent))
+logging.basicConfig(level=logging.INFO) # устанавливает уровень логирования
+
 
 # ruff: noqa: I001
 from src.api.auth import router as router_auth
@@ -20,18 +24,13 @@ from src.api.images import router as router_images
 from src.database import *
 
 
-# print(f'settings = {settings.DB_URL}')
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # подключение/отключение Redis
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
-    print("подключение к Redis")
 
     yield
     await redis_manager.disconnect()
-    print("отключение от Redis")
 
 
 app = FastAPI(

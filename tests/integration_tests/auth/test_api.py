@@ -4,9 +4,9 @@ import pytest
 @pytest.mark.parametrize(
     "email, password, status_code",
     [
-        ("test@user.com", "123", 400),
+        ("test@user.com", "123", 409),
         ("test2@user.com", "123", 200),
-        ("test2@user.com", "123", 400),
+        ("test2@user.com", "123", 409),
         ("ахахахаха", "123", 422),
     ],
 )
